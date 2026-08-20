@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'drf_spectacular',
     'appointments',
 ]
 
@@ -97,5 +98,26 @@ REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'appointments.exceptions.booking_exception_handler',
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
+    ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+# drf-spectacular — OpenAPI / Swagger documentation
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Clinic Booking System API',
+    'DESCRIPTION': (
+        'REST API for scheduling 30-minute clinic appointments. '
+        'Patients can book, view, cancel, and reschedule appointments with doctors. '
+        'Each doctor has defined working hours and 30-minute time slots.'
+    ),
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
+    'TAGS': [
+        {'name': 'Doctors', 'description': 'Register doctors and configure working hours'},
+        {'name': 'Patients', 'description': 'Register patients and view appointment history'},
+        {'name': 'Appointments', 'description': 'Book, cancel, and reschedule appointments'},
+        {'name': 'Availability', 'description': 'View doctor availability'},
+        {'name': 'Health', 'description': 'System health check'},
     ],
 }

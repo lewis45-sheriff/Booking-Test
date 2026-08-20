@@ -73,3 +73,76 @@ class PatientAppointmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Appointment
         fields = ["id", "doctor_name", "appointment_date", "start_time", "status"]
+
+
+# ---------------------------------------------------------------------------
+# Registration serializers
+# ---------------------------------------------------------------------------
+
+from .models import Doctor, Patient, WorkingHours
+
+
+class DoctorCreateSerializer(serializers.ModelSerializer):
+    """Create a new doctor."""
+
+    class Meta:
+        model = Doctor
+        fields = ["id", "name", "specialty"]
+        read_only_fields = ["id"]
+
+
+class DoctorSerializer(serializers.ModelSerializer):
+    """Full doctor response."""
+
+    class Meta:
+        model = Doctor
+        fields = ["id", "name", "specialty", "created_at"]
+
+
+class PatientCreateSerializer(serializers.ModelSerializer):
+    """Register a new patient."""
+
+    class Meta:
+        model = Patient
+        fields = ["id", "name", "email", "phone"]
+        read_only_fields = ["id"]
+
+
+class PatientSerializer(serializers.ModelSerializer):
+    """Full patient response."""
+
+    class Meta:
+        model = Patient
+        fields = ["id", "name", "email", "phone", "created_at"]
+
+
+class WorkingHoursCreateSerializer(serializers.Serializer):
+    """Configure working hours for a doctor on a specific day."""
+
+    doctor_id = serializers.UUIDField()
+    day_of_week = serializers.IntegerField(min_value=0, max_value=6)
+    start_time = serializers.TimeField(format="%H:%M", input_formats=["%H:%M", "%H:%M:%S"])
+    end_time = serializers.TimeField(format="%H:%M", input_formats=["%H:%M", "%H:%M:%S"])
+
+    def validate(self, data):
+        if data["start_time"] >= data["end_time"]:
+            raise serializers.ValidationError(
+                "Working hours start_time must be before end_time."
+            )
+        return data
+
+
+class WorkingHoursSerializer(serializers.ModelSerializer):
+    """Full working hours response."""
+
+    class Meta:
+        model = WorkingHours
+        fields = ["id", "doctor_id", "day_of_week", "start_time", "end_time"]
+
+
+class DoctorListSerializer(serializers.ModelSerializer):
+    """Doctor list with working hours summary."""
+
+    class Meta:
+        model = Doctor
+        fields = ["id", "name", "specialty", "created_at"]
