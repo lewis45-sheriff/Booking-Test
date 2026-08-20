@@ -1,6 +1,6 @@
 Django==4.2.16
 djangorestframework==3.15.2
-psycopg2-binary==2.9.9
+psycopg2-binary==2.9.10
 pytest-django==4.8.0
 hypothesis==6.112.1
 pytest-cov==5.0.0

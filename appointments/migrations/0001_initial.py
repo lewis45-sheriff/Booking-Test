@@ -87,7 +87,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="workinghours",
             constraint=models.CheckConstraint(
-                condition=models.Q(end_time__gt=models.F("start_time")),
+                check=models.Q(end_time__gt=models.F("start_time")),
                 name="wh_end_after_start",
             ),
         ),
@@ -149,3 +149,7 @@ class Migration(migrations.Migration):
             reverse_sql="DROP INDEX IF EXISTS uq_appointment_slot_active;",
         ),
     ]
+models.CheckConstraint(
+    check=models.Q(end_time__gt=models.F("start_time")),
+    name="wh_end_after_start",
+),
