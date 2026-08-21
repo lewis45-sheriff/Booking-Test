@@ -97,7 +97,7 @@ jobs:
             echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u ${{ secrets.GHCR_USER }} --password-stdin
 
             # Navigate to app directory
-            cd /home/ubuntu/bookingtest
+            cd /home/ubuntu/apps/Booking-Test
 
             # Pull the latest image
             docker compose -f docker-compose.prod.yml pull web
