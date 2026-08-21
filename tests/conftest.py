@@ -5,25 +5,9 @@ import uuid
 from datetime import date, time, timedelta
 
 import pytest
-from django.conf import settings
-from django.db import connections
 from rest_framework.test import APIClient
 
 from appointments.models import Appointment, Doctor, Patient, WorkingHours
-
-
-# ---------------------------------------------------------------------------
-# Fix Django 4.2 ATOMIC_REQUESTS KeyError: ensure the connection's
-# settings_dict has all required keys before any request is processed.
-# ---------------------------------------------------------------------------
-
-@pytest.fixture(autouse=True)
-def _patch_db_connection_settings(db):
-    """Ensure ATOMIC_REQUESTS is in each connection's settings_dict."""
-    for alias in connections:
-        conn = connections[alias]
-        conn.settings_dict.setdefault('ATOMIC_REQUESTS', False)
-        conn.settings_dict.setdefault('AUTOCOMMIT', True)
 
 
 # ---------------------------------------------------------------------------

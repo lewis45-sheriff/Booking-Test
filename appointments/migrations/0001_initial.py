@@ -87,7 +87,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="workinghours",
             constraint=models.CheckConstraint(
-                check=models.Q(end_time__gt=models.F("start_time")),
+                condition=models.Q(end_time__gt=models.F("start_time")),
                 name="wh_end_after_start",
             ),
         ),
