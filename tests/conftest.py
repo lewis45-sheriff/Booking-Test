@@ -6,23 +6,24 @@ from datetime import date, time, timedelta
 
 import pytest
 from django.conf import settings
+from django.db import connections
 from rest_framework.test import APIClient
 
 from appointments.models import Appointment, Doctor, Patient, WorkingHours
 
 
 # ---------------------------------------------------------------------------
-# Ensure ATOMIC_REQUESTS is set in database connection settings_dict
-# (required for Django 4.2 request handler)
+# Fix Django 4.2 ATOMIC_REQUESTS KeyError: ensure the connection's
+# settings_dict has all required keys before any request is processed.
 # ---------------------------------------------------------------------------
-for db_settings in settings.DATABASES.values():
-    db_settings.setdefault('ATOMIC_REQUESTS', False)
-    db_settings.setdefault('AUTOCOMMIT', True)
-    db_settings.setdefault('CONN_MAX_AGE', 0)
-    db_settings.setdefault('CONN_HEALTH_CHECKS', False)
-    db_settings.setdefault('OPTIONS', {})
-    db_settings.setdefault('TIME_ZONE', None)
-    db_settings.setdefault('TEST', {})
+
+@pytest.fixture(autouse=True)
+def _patch_db_connection_settings(db):
+    """Ensure ATOMIC_REQUESTS is in each connection's settings_dict."""
+    for alias in connections:
+        conn = connections[alias]
+        conn.settings_dict.setdefault('ATOMIC_REQUESTS', False)
+        conn.settings_dict.setdefault('AUTOCOMMIT', True)
 
 
 # ---------------------------------------------------------------------------
