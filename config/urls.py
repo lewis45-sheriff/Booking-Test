@@ -1,5 +1,6 @@
 """Root URL configuration for the clinic_booking project."""
 from django.urls import include, path
+from django.views.generic import RedirectView
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularRedocView,
@@ -7,6 +8,9 @@ from drf_spectacular.views import (
 )
 
 urlpatterns = [
+    # Root redirects to Swagger docs
+    path('', RedirectView.as_view(url='/api/docs/', permanent=False)),
+
     # API endpoints
     path('', include('appointments.urls')),
 
