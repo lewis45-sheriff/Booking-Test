@@ -27,22 +27,28 @@ QUERY_DATE = date(2025, 6, 15)
 # `min_slots` 30-minute slots.
 # ---------------------------------------------------------------------------
 
+def _make_working_hours(start_hour, start_minute, duration_slots):
+    """Build WorkingHoursConfig, raising InvalidArgument if end_time is invalid."""
+    end_total_minutes = start_hour * 60 + start_minute + duration_slots * 30
+    end_hour = end_total_minutes // 60
+    end_minute = end_total_minutes % 60
+    if end_hour > 23 or (end_hour == 23 and end_minute > 30):
+        # Return None to signal invalid combo — filtered out below
+        return None
+    return WorkingHoursConfig(
+        start_time=time(start_hour, start_minute),
+        end_time=time(end_hour, end_minute),
+    )
+
+
 def working_hours_strategy(min_slots: int = 1):
     """Generate a WorkingHoursConfig with at least `min_slots` complete slots."""
     return st.builds(
-        lambda start_hour, start_minute, duration_slots: WorkingHoursConfig(
-            start_time=time(start_hour, start_minute),
-            end_time=time(
-                (start_hour * 60 + start_minute + duration_slots * 30) // 60,
-                (start_hour * 60 + start_minute + duration_slots * 30) % 60,
-            ),
-        ),
+        _make_working_hours,
         start_hour=st.integers(min_value=6, max_value=20),
         start_minute=st.sampled_from([0, 30]),
         duration_slots=st.integers(min_value=min_slots, max_value=16),
-    ).filter(
-        lambda wh: (wh.end_time.hour * 60 + wh.end_time.minute) <= 23 * 60 + 30
-    )
+    ).filter(lambda wh: wh is not None)
 
 
 # ---------------------------------------------------------------------------

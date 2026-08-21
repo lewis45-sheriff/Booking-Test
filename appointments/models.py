@@ -35,6 +35,12 @@ class WorkingHours(models.Model):
 
     class Meta:
         unique_together = [("doctor", "day_of_week")]
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(end_time__gt=models.F("start_time")),
+                name="wh_end_after_start",
+            ),
+        ]
 
     def __str__(self):
         return f"{self.doctor.name} — day {self.day_of_week} ({self.start_time}–{self.end_time})"

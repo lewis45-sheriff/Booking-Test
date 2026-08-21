@@ -70,6 +70,7 @@ DATABASES = {
         'PASSWORD': os.environ.get('DB_PASSWORD', 'root'),
         'HOST': os.environ.get('DB_HOST', 'localhost'),
         'PORT': os.environ.get('DB_PORT', '5432'),
+        'ATOMIC_REQUESTS': False,
     }
 }
 
