@@ -23,6 +23,29 @@ class AppointmentSerializer(serializers.ModelSerializer):
         fields = ["id", "doctor_id", "patient_id", "appointment_date", "start_time", "status"]
 
 
+class AppointmentListSerializer(serializers.ModelSerializer):
+    """Full serializer for listing all appointments with pagination."""
+
+    start_time = serializers.TimeField(format="%H:%M")
+    doctor_name = serializers.CharField(source="doctor.name", read_only=True)
+    patient_name = serializers.CharField(source="patient.name", read_only=True)
+
+    class Meta:
+        model = Appointment
+        fields = [
+            "id",
+            "doctor_id",
+            "doctor_name",
+            "patient_id",
+            "patient_name",
+            "appointment_date",
+            "start_time",
+            "status",
+            "cancellation_reason",
+            "created_at",
+        ]
+
+
 class CancelSerializer(serializers.Serializer):
     """Deserializes and validates cancellation requests."""
 

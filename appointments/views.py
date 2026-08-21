@@ -15,6 +15,7 @@ from drf_spectacular.types import OpenApiTypes
 from appointments.serializers import (
     AppointmentCreateSerializer,
     AppointmentSerializer,
+    AppointmentListSerializer,
     AvailabilitySerializer,
     CancelSerializer,
     CancelResponseSerializer,
@@ -388,6 +389,97 @@ class PatientAppointmentsView(APIView):
         return Response(
             PatientAppointmentSerializer(appointments, many=True).data,
             status=status.HTTP_200_OK,
+        )
+
+
+# ---------------------------------------------------------------------------
+# Health Check
+# ---------------------------------------------------------------------------
+
+
+# ---------------------------------------------------------------------------
+# All Appointments (Paginated)
+# ---------------------------------------------------------------------------
+
+
+class AppointmentListView(APIView):
+    """List all appointments with pagination."""
+
+    @extend_schema(
+        tags=["Appointments"],
+        summary="List all appointments (paginated)",
+        description=(
+            "Returns a paginated list of all appointments in the system.\n\n"
+            "**Query parameters:**\n"
+            "- `page` (default: 1) — page number\n"
+            "- `page_size` (default: 20, max: 100) — items per page\n"
+            "- `status` (optional) — filter by status: 'scheduled' or 'cancelled'"
+        ),
+        parameters=[
+            OpenApiParameter(
+                name="page",
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Page number (default: 1)",
+            ),
+            OpenApiParameter(
+                name="page_size",
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Items per page (default: 20, max: 100)",
+            ),
+            OpenApiParameter(
+                name="status",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Filter by status: 'scheduled' or 'cancelled'",
+            ),
+        ],
+        responses={
+            200: OpenApiResponse(
+                description="Paginated list of appointments",
+            ),
+        },
+    )
+    def get(self, request):
+        from appointments.models import Appointment
+
+        # Parse pagination params
+        try:
+            page = max(1, int(request.query_params.get("page", 1)))
+        except (ValueError, TypeError):
+            page = 1
+        try:
+            page_size = min(100, max(1, int(request.query_params.get("page_size", 20))))
+        except (ValueError, TypeError):
+            page_size = 20
+
+        # Filter by status if provided
+        status_filter = request.query_params.get("status")
+        queryset = Appointment.objects.select_related("doctor", "patient").order_by(
+            "-appointment_date", "-start_time"
+        )
+        if status_filter in ("scheduled", "cancelled"):
+            queryset = queryset.filter(status=status_filter)
+
+        # Paginate
+        total = queryset.count()
+        start = (page - 1) * page_size
+        end = start + page_size
+        appointments = queryset[start:end]
+
+        return Response(
+            {
+                "count": total,
+                "page": page,
+                "page_size": page_size,
+                "total_pages": (total + page_size - 1) // page_size if total > 0 else 1,
+                "results": AppointmentListSerializer(appointments, many=True).data,
+            },
+            status=200,
         )
 
 

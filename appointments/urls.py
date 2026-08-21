@@ -6,6 +6,7 @@ from .views import (
     AppointmentBookView,
     AppointmentCancelView,
     AppointmentRescheduleView,
+    AppointmentListView,
     DoctorAvailabilityView,
     HealthCheckView,
     PatientAppointmentsView,
@@ -22,6 +23,7 @@ from .views import (
 urlpatterns = [
     # --- Booking & Scheduling ---
     path('appointments', AppointmentBookView.as_view(), name='appointment-book'),
+    path('appointments/list', AppointmentListView.as_view(), name='appointment-list'),
     path('appointments/<uuid:appointment_id>/cancel', AppointmentCancelView.as_view(), name='appointment-cancel'),
     path('appointments/<uuid:appointment_id>/reschedule', AppointmentRescheduleView.as_view(), name='appointment-reschedule'),
     path('doctors/<uuid:doctor_id>/availability', DoctorAvailabilityView.as_view(), name='doctor-availability'),
