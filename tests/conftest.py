@@ -11,6 +11,26 @@ from appointments.models import Appointment, Doctor, Patient, WorkingHours
 
 
 # ---------------------------------------------------------------------------
+# Fix: Monkey-patch Django's BaseHandler.make_view_atomic to handle missing
+# ATOMIC_REQUESTS key gracefully. This is a known issue with certain
+# combinations of Django + DRF + pytest-django.
+# ---------------------------------------------------------------------------
+from django.core.handlers.base import BaseHandler
+
+_original_make_view_atomic = BaseHandler.make_view_atomic
+
+
+def _patched_make_view_atomic(self, view, using):
+    from django.db import connections
+    conn = connections[using]
+    conn.settings_dict.setdefault('ATOMIC_REQUESTS', False)
+    return _original_make_view_atomic(self, view, using)
+
+
+BaseHandler.make_view_atomic = _patched_make_view_atomic
+
+
+# ---------------------------------------------------------------------------
 # Basic fixtures
 # ---------------------------------------------------------------------------
 
