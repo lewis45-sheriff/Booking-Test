@@ -5,9 +5,24 @@ import uuid
 from datetime import date, time, timedelta
 
 import pytest
+from django.conf import settings
 from rest_framework.test import APIClient
 
 from appointments.models import Appointment, Doctor, Patient, WorkingHours
+
+
+# ---------------------------------------------------------------------------
+# Ensure ATOMIC_REQUESTS is set in database connection settings_dict
+# (required for Django 4.2 request handler)
+# ---------------------------------------------------------------------------
+for db_settings in settings.DATABASES.values():
+    db_settings.setdefault('ATOMIC_REQUESTS', False)
+    db_settings.setdefault('AUTOCOMMIT', True)
+    db_settings.setdefault('CONN_MAX_AGE', 0)
+    db_settings.setdefault('CONN_HEALTH_CHECKS', False)
+    db_settings.setdefault('OPTIONS', {})
+    db_settings.setdefault('TIME_ZONE', None)
+    db_settings.setdefault('TEST', {})
 
 
 # ---------------------------------------------------------------------------
