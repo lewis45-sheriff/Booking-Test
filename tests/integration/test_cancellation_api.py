@@ -58,7 +58,7 @@ class TestCancellationSuccess:
         )
 
         assert response.status_code == 200
-        data = response.json()
+        data = response.json()["data"]
         assert data["status"] == "cancelled"
         assert data["cancellation_reason"] == "Patient is feeling better"
 

@@ -30,7 +30,7 @@ class TestAvailabilitySuccess:
         )
 
         assert response.status_code == 200
-        data = response.json()
+        data = response.json()["data"]
         assert "slots" in data
         assert len(data["slots"]) == 16  # (17:00 - 09:00) / 0:30 = 16 slots
 
@@ -46,7 +46,7 @@ class TestAvailabilitySuccess:
         )
 
         assert response.status_code == 200
-        data = response.json()
+        data = response.json()["data"]
         assert data["slots"] == []
 
     def test_availability_empty_past_date(self, api_client, doctor, working_hours):
@@ -59,7 +59,7 @@ class TestAvailabilitySuccess:
         )
 
         assert response.status_code == 200
-        data = response.json()
+        data = response.json()["data"]
         assert data["slots"] == []
 
 

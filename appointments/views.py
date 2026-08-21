@@ -108,7 +108,10 @@ class AppointmentBookView(APIView):
         serializer.is_valid(raise_exception=True)
         appointment = create_booking(**serializer.validated_data)
         return Response(
-            AppointmentSerializer(appointment).data,
+            {
+                "message": "Appointment booked successfully.",
+                "data": AppointmentSerializer(appointment).data,
+            },
             status=status.HTTP_201_CREATED,
         )
 
@@ -176,7 +179,10 @@ class AppointmentCancelView(APIView):
             serializer.validated_data["cancellation_reason"],
         )
         return Response(
-            CancelResponseSerializer(appointment).data,
+            {
+                "message": "Appointment cancelled successfully.",
+                "data": CancelResponseSerializer(appointment).data,
+            },
             status=status.HTTP_200_OK,
         )
 
@@ -246,7 +252,10 @@ class AppointmentRescheduleView(APIView):
             serializer.validated_data["start_time"],
         )
         return Response(
-            AppointmentSerializer(appointment).data,
+            {
+                "message": "Appointment rescheduled successfully.",
+                "data": AppointmentSerializer(appointment).data,
+            },
             status=status.HTTP_200_OK,
         )
 
@@ -326,7 +335,10 @@ class DoctorAvailabilityView(APIView):
 
         slots = get_availability(doctor_id, query_date)
         return Response(
-            {"slots": [slot.strftime("%H:%M") for slot in slots]},
+            {
+                "message": "Availability retrieved successfully.",
+                "data": {"slots": [slot.strftime("%H:%M") for slot in slots]},
+            },
             status=status.HTTP_200_OK,
         )
 
@@ -387,7 +399,10 @@ class PatientAppointmentsView(APIView):
     def get(self, request, patient_id):
         appointments = list_upcoming_appointments(patient_id)
         return Response(
-            PatientAppointmentSerializer(appointments, many=True).data,
+            {
+                "message": "Patient appointments retrieved successfully.",
+                "data": PatientAppointmentSerializer(appointments, many=True).data,
+            },
             status=status.HTTP_200_OK,
         )
 
@@ -473,11 +488,12 @@ class AppointmentListView(APIView):
 
         return Response(
             {
+                "message": "Appointments retrieved successfully.",
                 "count": total,
                 "page": page,
                 "page_size": page_size,
                 "total_pages": (total + page_size - 1) // page_size if total > 0 else 1,
-                "results": AppointmentListSerializer(appointments, many=True).data,
+                "data": AppointmentListSerializer(appointments, many=True).data,
             },
             status=200,
         )
@@ -508,7 +524,7 @@ class HealthCheckView(APIView):
         },
     )
     def get(self, request):
-        return Response({"status": "ok"}, status=status.HTTP_200_OK)
+        return Response({"message": "Service is healthy.", "status": "ok"}, status=status.HTTP_200_OK)
 
 
 # ---------------------------------------------------------------------------
@@ -569,7 +585,10 @@ class DoctorRegisterView(APIView):
         serializer.is_valid(raise_exception=True)
         doctor = serializer.save()
         return Response(
-            DoctorSerializer(doctor).data,
+            {
+                "message": "Doctor registered successfully.",
+                "data": DoctorSerializer(doctor).data,
+            },
             status=status.HTTP_201_CREATED,
         )
 
@@ -591,7 +610,10 @@ class DoctorListView(APIView):
     def get(self, request):
         doctors = Doctor.objects.all().order_by("name")
         return Response(
-            DoctorListSerializer(doctors, many=True).data,
+            {
+                "message": "Doctors retrieved successfully.",
+                "data": DoctorListSerializer(doctors, many=True).data,
+            },
             status=status.HTTP_200_OK,
         )
 
@@ -622,7 +644,13 @@ class DoctorDetailView(APIView):
 
         data = DoctorSerializer(doctor).data
         data["working_hours"] = WorkingHoursSerializer(working_hours, many=True).data
-        return Response(data, status=status.HTTP_200_OK)
+        return Response(
+            {
+                "message": "Doctor details retrieved successfully.",
+                "data": data,
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 class PatientRegisterView(APIView):
@@ -676,11 +704,14 @@ class PatientRegisterView(APIView):
             patient = serializer.save()
         except Exception:
             return Response(
-                {"detail": "A patient with this email already exists."},
+                {"message": "A patient with this email already exists.", "detail": "Duplicate email."},
                 status=status.HTTP_409_CONFLICT,
             )
         return Response(
-            PatientSerializer(patient).data,
+            {
+                "message": "Patient registered successfully.",
+                "data": PatientSerializer(patient).data,
+            },
             status=status.HTTP_201_CREATED,
         )
 
@@ -702,7 +733,10 @@ class PatientListView(APIView):
     def get(self, request):
         patients = Patient.objects.all().order_by("name")
         return Response(
-            PatientSerializer(patients, many=True).data,
+            {
+                "message": "Patients retrieved successfully.",
+                "data": PatientSerializer(patients, many=True).data,
+            },
             status=status.HTTP_200_OK,
         )
 
@@ -789,11 +823,14 @@ class WorkingHoursConfigView(APIView):
             )
         except Exception:
             return Response(
-                {"detail": "Working hours already configured for this doctor on this day."},
+                {"message": "Working hours already configured for this doctor on this day.", "detail": "Duplicate entry."},
                 status=status.HTTP_409_CONFLICT,
             )
         return Response(
-            WorkingHoursSerializer(wh).data,
+            {
+                "message": "Working hours configured successfully.",
+                "data": WorkingHoursSerializer(wh).data,
+            },
             status=status.HTTP_201_CREATED,
         )
 
@@ -822,6 +859,9 @@ class DoctorWorkingHoursListView(APIView):
         DoctorRepo().get_by_id(doctor_id)
         working_hours = WorkingHours.objects.filter(doctor_id=doctor_id).order_by("day_of_week")
         return Response(
-            WorkingHoursSerializer(working_hours, many=True).data,
+            {
+                "message": "Working hours retrieved successfully.",
+                "data": WorkingHoursSerializer(working_hours, many=True).data,
+            },
             status=status.HTTP_200_OK,
         )

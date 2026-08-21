@@ -38,7 +38,9 @@ class TestBookingSuccess:
         response = api_client.post("/appointments", payload, format="json")
 
         assert response.status_code == 201
-        data = response.json()
+        body = response.json()
+        assert body["message"] == "Appointment booked successfully."
+        data = body["data"]
         assert "id" in data
         assert data["doctor_id"] == str(doctor.id)
         assert data["patient_id"] == str(patient.id)

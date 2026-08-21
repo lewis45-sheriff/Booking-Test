@@ -89,7 +89,7 @@ class TestRescheduleSuccess:
         )
 
         assert response.status_code == 200
-        data = response.json()
+        data = response.json()["data"]
         assert data["appointment_date"] == new_date.isoformat()
         assert data["start_time"] in ("14:00", "14:00:00")
         assert data["status"] == "scheduled"

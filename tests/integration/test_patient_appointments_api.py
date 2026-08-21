@@ -69,7 +69,7 @@ class TestPatientAppointmentsSuccess:
         response = api_client.get(f"/patients/{pa_patient.id}/appointments")
 
         assert response.status_code == 200
-        data = response.json()
+        data = response.json()["data"]
         assert len(data) >= 1
         appt = data[0]
         assert "id" in appt
@@ -85,7 +85,7 @@ class TestPatientAppointmentsSuccess:
         response = api_client.get(f"/patients/{pa_patient.id}/appointments")
 
         assert response.status_code == 200
-        data = response.json()
+        data = response.json()["data"]
         assert data == []
 
     def test_patient_appointments_excludes_cancelled(
@@ -105,7 +105,7 @@ class TestPatientAppointmentsSuccess:
         response = api_client.get(f"/patients/{pa_patient.id}/appointments")
 
         assert response.status_code == 200
-        data = response.json()
+        data = response.json()["data"]
         assert data == []
 
     def test_patient_appointments_50_cap(
@@ -131,7 +131,7 @@ class TestPatientAppointmentsSuccess:
         response = api_client.get(f"/patients/{pa_patient.id}/appointments")
 
         assert response.status_code == 200
-        data = response.json()
+        data = response.json()["data"]
         assert len(data) == 50
 
 
