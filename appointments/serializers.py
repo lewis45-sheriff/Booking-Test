@@ -16,6 +16,8 @@ class AppointmentCreateSerializer(serializers.Serializer):
 class AppointmentSerializer(serializers.ModelSerializer):
     """Response serializer for booking and reschedule operations."""
 
+    start_time = serializers.TimeField(format="%H:%M")
+
     class Meta:
         model = Appointment
         fields = ["id", "doctor_id", "patient_id", "appointment_date", "start_time", "status"]
