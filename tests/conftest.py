@@ -20,11 +20,17 @@ from django.core.handlers.base import BaseHandler
 _original_make_view_atomic = BaseHandler.make_view_atomic
 
 
-def _patched_make_view_atomic(self, view, using):
+def _patched_make_view_atomic(self, view, using=None):
     from django.db import connections
-    conn = connections[using]
-    conn.settings_dict.setdefault('ATOMIC_REQUESTS', False)
-    return _original_make_view_atomic(self, view, using)
+    # Django 5.1 signature: make_view_atomic(self, view)
+    # Django 4.2 signature: make_view_atomic(self, view, using)
+    # Patch all connections to ensure ATOMIC_REQUESTS exists
+    for alias in connections:
+        connections[alias].settings_dict.setdefault('ATOMIC_REQUESTS', False)
+    if using is not None:
+        return _original_make_view_atomic(self, view, using)
+    else:
+        return _original_make_view_atomic(self, view)
 
 
 BaseHandler.make_view_atomic = _patched_make_view_atomic
