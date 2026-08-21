@@ -11,26 +11,24 @@ from appointments.models import Appointment, Doctor, Patient, WorkingHours
 
 
 # ---------------------------------------------------------------------------
-# Fix: Monkey-patch Django's BaseHandler.make_view_atomic to handle missing
-# ATOMIC_REQUESTS key gracefully. This is a known issue with certain
-# combinations of Django + DRF + pytest-django.
+# Fix: Replace Django's BaseHandler.make_view_atomic entirely to handle
+# missing ATOMIC_REQUESTS key. The connection handler creates wrappers
+# with incomplete settings_dict during tests.
 # ---------------------------------------------------------------------------
 from django.core.handlers.base import BaseHandler
 
-_original_make_view_atomic = BaseHandler.make_view_atomic
 
-
-def _patched_make_view_atomic(self, view, using=None):
+def _patched_make_view_atomic(self, view):
     from django.db import connections
-    # Django 5.1 signature: make_view_atomic(self, view)
-    # Django 4.2 signature: make_view_atomic(self, view, using)
-    # Patch all connections to ensure ATOMIC_REQUESTS exists
+    from django.utils.decorators import method_decorator
+    from django.db import transaction
+
+    non_atomic_requests = getattr(view, '_non_atomic_requests', set())
     for alias in connections:
-        connections[alias].settings_dict.setdefault('ATOMIC_REQUESTS', False)
-    if using is not None:
-        return _original_make_view_atomic(self, view, using)
-    else:
-        return _original_make_view_atomic(self, view)
+        settings_dict = connections[alias].settings_dict
+        if settings_dict.get('ATOMIC_REQUESTS', False) and alias not in non_atomic_requests:
+            view = method_decorator(transaction.atomic(using=alias))(view)
+    return view
 
 
 BaseHandler.make_view_atomic = _patched_make_view_atomic
